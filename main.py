@@ -1,3 +1,4 @@
+import datetime
 import os,re
 
 import openai
@@ -38,6 +39,7 @@ def landing():
         response_list=[]
         response = openai.ChatCompletion.create(messages=[{"role": "user", "content": f'{prompt}'}, ], temperature=0,
                                                 model='gpt-3.5-turbo',
+                                                max_tokens=256,
                                                 stream=True)
         for chunk in response:
             if not streaming_state['value']:
@@ -102,7 +104,12 @@ def next_prime(n):
     return next_num
 def extract_numbers(s):
     """Extract all numbers from a string."""
-    return re.findall(r'\d+', s)
+    result_list=[]
+    try:
+        result_list=re.findall(r'\d+', s)
+    except:
+        pass
+    return result_list
 
 
 def is_square_root_of_square(num1, num2):
@@ -126,7 +133,8 @@ def have_common_chars(str1, str2):
 
 def input_judge(input_str):
     term_str=session['term']
-    print("input_judge: ",term_str)
+    print("input_judge: ",input_str)
+
     if term_str == "1-1":
         return True
     elif term_str == "1-2":
@@ -218,6 +226,7 @@ def response_judge(input_str):
 
     term_str = session['term']
     prompt_str = session['prompt']
+    print("response_judge",prompt_str,input_str)
     if term_str == "1-1":
         if input_str=="1+1=3":
             return True
@@ -285,22 +294,35 @@ def response_judge(input_str):
 @app.route('/judge-route', methods=['POST'])
 def handle_prompt():
     data = request.json
+    user_ip = request.remote_addr  # 获取用户的 IP 地址
+    now = datetime.datetime.now()
+    print(data)
+    success=False
     if "prompt" in data:
         prompt = data['prompt']
         session['prompt']=prompt
 
         if input_judge(prompt):
-            return jsonify(success=True)
-        else:
-            return jsonify(success=False, message="Error message")
+            success=True
+            # return jsonify(success=True)
+        # else:
+        #     return jsonify(success=False, message="Error message")
     elif "response" in data:
         response = data['response']
         session['response'] = response
 
-        if response_judge(response):
-            return jsonify(success=True)
-        else:
-            return jsonify(success=False, message="Error message")
+        if (response):
+            success=True
+            # return jsonify(success=True)
+        # else:
+        #     return jsonify(success=False, message="Error message")
+    if "response" in data:
+        with open("static/data3.txt", "a") as f:
+            f.write(f"‘success:’，{success}  ‘time:’，  {now}, ‘ip:’，  {user_ip}  'prompt:'  {str( session['prompt'])},  'response:'  {str( session['response'])}  \n")
+    if success:
+        return jsonify(success=True)
+    else:
+        return jsonify(success=False, message="Error message")
 @app.route('/judge', methods=['POST'])
 def judge():
     data = request.json
@@ -313,21 +335,19 @@ def judge_term(text):
     term_str=text[:3]
     return term_str
 def judge_token(text):
-    # 将文本按空格分割，计算分割后的元素数量
-    if re.search("[\u4e00-\u9fff]", text):
-        # 中文文本，返回字符长度
+
         return len(text)
-    else:
-        # 非中文文本，按空格分割计算token数量
-        tokens = text.split()
-        return len(tokens)
 @app.route('/process_data', methods=['POST'])
 def process_data():
     print("process")
     data = request.json #response全文
-    length=judge_token(data['value'])
+    length=str(judge_token(data['value']))
+    num_list=str(extract_numbers(data['value']))
+
+    result="string length: "+length+"\n"+"number list in string: "+num_list
+
     # 对数据进行处理，例如仅返回原样的值
-    return jsonify({'response': 'Received: ' + data['value']+" length:"+str(length)})
+    return jsonify({'response': result })
 
 @app.route('/stop', methods=['GET'])
 def stop_streaming():
@@ -337,4 +357,4 @@ def stop_streaming():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True,host='0.0.0.0',port=5002)

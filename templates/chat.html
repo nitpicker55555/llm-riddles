@@ -133,62 +133,117 @@
                     });
                 });
             });
-            function addUserChat(prompt) {
+            function addUserChat(prompt, mode = "You") {
                 var userMessageElement = document.createElement("p");
-                userMessageElement.classList.add("border-dashed", "bg-gray-200", "p-2");
-                userMessageElement.innerHTML = "<strong>You:</strong>" + " " + prompt;
-                resultContainer.appendChild(userMessageElement);
+                if (mode === "You") {
+                    userMessageElement.classList.add("border-dashed", "bg-gray-200", "p-2");
+                }
+                else{
+                    userMessageElement.classList.add("border-dashed", "bg-red-200", "p-2");
+                }
+                userMessageElement.innerHTML = "<strong>" + mode + ":</strong> " + prompt;
+                resultContainer.innerHTML = userMessageElement.outerHTML;
             }
 
             promptForm.addEventListener('submit', async function(event) {
                 event.preventDefault();
 
                 var prompt = promptForm.elements.prompt.value;
-                addUserChat(prompt);
 
-                var formData = new FormData(promptForm);
-                formData.append('prompt', prompt);
+                    try {
+                        const response = await fetch('/judge-route', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ prompt: prompt }),
+                        });
 
-                promptForm.elements.prompt.value = "";
+                        const result = await response.json();
 
-                try {
-                    const response = await fetch('{{url_for('landing')}}', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const reader = response.body.getReader();
+                        if (result.success) {
+                            // Do something if the judge function returns true
+                                            addUserChat(prompt);
 
-                    var aiMessageElement = document.createElement("p");
-                    aiMessageElement.classList.add("border", "p-2", "whitespace-pre-line", "py-2", "bg-green-100");
-                    aiMessageElement.innerHTML = "<strong>AI:</strong>" + " ";
-                    resultContainer.appendChild(aiMessageElement);
+                                            var formData = new FormData(promptForm);
+                                            formData.append('prompt', prompt);
 
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-                        const text = new TextDecoder().decode(value);
-                        aiMessageElement.textContent += text;
+                                            promptForm.elements.prompt.value = "";
+
+                                            try {
+                                                const response = await fetch('{{url_for('landing')}}', {
+                                                    method: 'POST',
+                                                    body: formData
+                                                });
+                                                const reader = response.body.getReader();
+
+                                                var aiMessageElement = document.createElement("p");
+                                                aiMessageElement.classList.add("border", "p-2", "whitespace-pre-line", "py-2", "bg-green-100");
+                                                aiMessageElement.innerHTML = "<strong>AI:</strong>" + " ";
+                                                resultContainer.appendChild(aiMessageElement);
+
+                                                while (true) {
+                                                    const { done, value } = await reader.read();
+                                                    if (done) break;
+                                                    const text = new TextDecoder().decode(value);
+                                                    aiMessageElement.textContent += text;
+                                                }
+                                                console.log('aiMessageElement.textContent', aiMessageElement.textContent);
+                                                fetch('/process_data', {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                    },
+                                                    body: JSON.stringify({ value: aiMessageElement.textContent })
+                                                })
+                                                .then(response => response.json())
+                                                .then(data => {
+                                                    // 处理从 Flask 返回的数据
+                                                    console.log('data.response', data.response);
+                                                    // document.getElementById("flaskResponse").value = data.response;
+                                                    try {
+                                                        const response =  fetch('/judge-route', {
+                                                            method: 'POST',
+                                                            headers: {
+                                                                'Content-Type': 'application/json',
+                                                            },
+                                                            body: JSON.stringify({ response:  data.response }),
+                                                        });
+
+                                                        const response_result =  response.json();
+
+                                                        if (response_result.success) {
+
+
+                                                        } else {
+                                                            // addUserChat("输出结果不符合当前关卡要求！","error")
+                                                            document.getElementById("flaskResponse").value="输出结果不符合当前关卡要求！"
+                                                            console.log('judge not success:', response_result.message);
+
+                                                        }
+                                                    } catch (error) {
+                                                        console.log('judge Error:', error);
+                                                    }
+
+                                                })
+                                                .catch((error) => {
+                                                    console.error('Error:', error);
+                                                });
+
+                                            } catch (error) {
+                                                console.error(error);
+                                            }
+                        } else {
+                            addUserChat("输入格式不符合当前关卡要求！","error")
+                            console.log('judge not success:', result.message);
+
+                        }
+                    } catch (error) {
+                        console.log('judge Error:', error);
                     }
-                    console.log('aiMessageElement.textContent', aiMessageElement.textContent);
-                    fetch('/process_data', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ value: aiMessageElement.textContent })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        // 处理从 Flask 返回的数据
-                        console.log('data.response', data.response);
-                        document.getElementById("flaskResponse").value = data.response;
-                    })
-                    .catch((error) => {
-                        console.error('Error:', error);
-                    });
-                } catch (error) {
-                    console.error(error);
-                }
+
+
+
 
             });
 

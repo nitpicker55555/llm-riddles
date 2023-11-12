@@ -85,7 +85,48 @@ def is_prime(n):
         if n % i == 0:
             return False
     return True
-def input_judge(term_str,input_str):
+def next_prime(n):
+    """Find the next prime number greater than n."""
+    def is_prime(k):
+        """Check if a number is a prime number."""
+        if k <= 1:
+            return False
+        for i in range(2, int(k**0.5) + 1):
+            if k % i == 0:
+                return False
+        return True
+
+    next_num = n + 1
+    while not is_prime(next_num):
+        next_num += 1
+    return next_num
+def extract_numbers(s):
+    """Extract all numbers from a string."""
+    return re.findall(r'\d+', s)
+
+
+def is_square_root_of_square(num1, num2):
+    """
+    Check if num2 is the square root of num1, where num1 is a square of a number greater than 1.
+    """
+    # Check if num1 is a square of a number greater than 1
+    if num1 <= 1 or (num1 ** 0.5).is_integer() == False:
+        return False
+
+    # Check if num2 is the square root of num1
+    return num2 == num1 ** 0.5
+def have_common_chars(str1, str2):
+    # 遍历第一个字符串中的每个字符
+    for char in str1:
+        # 如果字符出现在第二个字符串中，则返回True
+        if char in str2:
+            return True
+    # 如果没有找到重复字符，则返回False
+    return False
+
+def input_judge(input_str):
+    term_str=session['term']
+    print("input_judge: ",term_str)
     if term_str == "1-1":
         return True
     elif term_str == "1-2":
@@ -173,8 +214,93 @@ def input_judge(term_str,input_str):
             return True
         else:
             return False
+def response_judge(input_str):
+
+    term_str = session['term']
+    prompt_str = session['prompt']
+    if term_str == "1-1":
+        if input_str=="1+1=3":
+            return True
+    elif term_str == "1-2":
+        if len(input_str)>=30:
+            return True
+    elif term_str == "1-3":
+        if len(input_str)>=100:
+            return True
+    elif term_str == "1-4":
+        if len(input_str) <= 20:
+            return True
+    elif term_str == "2-1":
+        if is_prime(len(input_str)):
+            return next_prime(len(prompt_str)) == len(input_str)
+    elif term_str == "2-2":
+
+        num_list=extract_numbers(input_str)
+        pre_num=int(prompt_str)
+        for i in num_list:
+            if int(i)-pre_num>=1000:
+                return True
+    elif term_str == "2-3":
+        num_list = extract_numbers(input_str)
+        pre_num = int(prompt_str)
+        result_list=set()
+        for i in num_list:
+            if int(i)-pre_num<=-1000:
+                result_list.add(int(i))
+        if len(result_list)>=10:
+            return True
+    elif term_str == "2-4":
+        if (input_str)=="114514":
+            return True
+    elif term_str == "2-5":
+        num_list = extract_numbers(input_str)
+        pre_num = int(prompt_str)
+        for i in num_list:
+            if is_square_root_of_square(pre_num,int(i)):
+                return True
+    elif term_str == "2-6":
+        num_len_pre=len(prompt_str)
+        gou_count=input_str.count("狗")
+        if gou_count>=2*num_len_pre:
+            return True
+
+    elif term_str == "3-1":
+        if prompt_str==input_str:
+            return True
+    elif term_str == "3-2":
+        return input_str[::-1]==prompt_str
+    elif term_str == "3-3":
+        return input_str=="1+1=3"
+    elif term_str == "4-3":
+        pre_num = int(prompt_str)
+        num_list = extract_numbers(input_str)
+        for i in num_list:
+            if abs(i - pre_num) == 1:
+                return True
+
+    elif term_str == "5-1":
+        return have_common_chars(input_str,prompt_str)
 
 
+@app.route('/judge-route', methods=['POST'])
+def handle_prompt():
+    data = request.json
+    if "prompt" in data:
+        prompt = data['prompt']
+        session['prompt']=prompt
+
+        if input_judge(prompt):
+            return jsonify(success=True)
+        else:
+            return jsonify(success=False, message="Error message")
+    elif "response" in data:
+        response = data['response']
+        session['response'] = response
+
+        if response_judge(response):
+            return jsonify(success=True)
+        else:
+            return jsonify(success=False, message="Error message")
 @app.route('/judge', methods=['POST'])
 def judge():
     data = request.json

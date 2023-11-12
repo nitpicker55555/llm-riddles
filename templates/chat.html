@@ -8,39 +8,131 @@
     <script src="https://unpkg.com/htmx.org@1.9.5"></script>
     <title>OpenAI API Completions Streaming Response</title>
 </head>
-<body class="bg-black text-black min-h-screen flex items-center justify-center">
-<input type="text" id="flaskResponse">
-<div class="lg:w-1/2 2xl:w-1/3 p-7 rounded-md bg-gray-100">
-    <h1 class="text-xl font-bold mb-6">
-        Streaming OpenAI API Response (Flask)
-    </h1>
-    <div id="resultContainer" class="mt-4 h-48 overflow-y-auto">
-        <p id="user" class="border-dashed whitespace-pre-line"></p>
-        <p id="result" class="border whitespace-pre-line"></p>
-    </div>
 
-    <form method="post" id='prompt_form'>
+
+<body class="bg-gray-200 text-gray-900 min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-md mx-auto p-6 rounded-md bg-white shadow-lg">
+        <h1 class="text-2xl font-bold mb-4 text-center">
+            Streaming OpenAI API Response (Flask)
+        </h1>
+                <h1 class="text-2xl font-bold mb-4 text-center" id="question">
+            请选择关卡
+        </h1>
+
+        <h1 class="text-2xl font-bold mb-4 text-center" id="wholequestion">
+            请选择关卡
+        </h1>
+        <!-- New input element added here -->
         <input
+            type="text"
+            id="flaskResponse"
+            class="w-full px-4 border-2 border-gray-300 py-2 rounded-md mb-4"
+            placeholder="Flask Response"
+        />
+        <div id="resultContainer" class="mt-4 h-48 overflow-y-auto border-2 border-gray-300 rounded-md p-3">
+            <p id="user" class="whitespace-pre-line"></p>
+            <p id="result" class="whitespace-pre-line"></p>
+        </div>
+        <form method="post" id='prompt_form' class="mt-6">
+            <input
                 type="text"
                 id="prompt" name="prompt"
-                class="w-full px-4 border-2 border-emerald-500 py-2 rounded-md bg-grey-200 placeholder-gray-500 focus:outline-none mt-4"
+                class="w-full px-4 border-2 border-purple-500 py-2 rounded-md bg-white placeholder-gray-500 focus:outline-none"
                 placeholder="Ask Something..." required
-        />
-        <div class="flex justify-center mt-4">
-            <button
+            />
+            <div class="flex justify-center mt-4">
+                <button
                     id="generateBtn" type="submit"
-                    class="w-2/3 px-4 py-2 rounded-md bg-emerald-800 text-white hover:bg-gray-900 focus:outline-none mr-2 disabled:opacity-75 disabled:cursor-not-allowed"
-            >
-                Generate
-            </button>
+                    class="w-full px-4 py-2 rounded-md bg-purple-500 text-white hover:bg-purple-700 focus:outline-none"
+                >
+                    Generate
+                </button>
+            </div>
+        </form>
+        <!-- Add this form to your existing HTML where you want the new buttons -->
+                <h1 class="text-2xl font-bold mb-4 text-center">
+            选择关卡
+        </h1>
+<form id='judge_form'  class="grid grid-cols-3 gap-4"  >
+    <!-- Replace 'Button Caption 1' with your actual button captions -->
+  <button type="button"  data-caption="1-1 初来乍到">1-1 初来乍到</button>
+    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="1-2 小试牛刀">1-2 小试牛刀</button>
+    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="1-3 短兵相接">1-3 短兵相接</button>
+    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="1-4 移形换影">1-4 移形换影</button>
+    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-1 展翅飞翔">2-1 展翅飞翔</button>
+    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-2 虚张声势">2-2 虚张声势</button>
+    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-3 超级堡垒">2-3 超级堡垒</button>
+    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-4 铁壁铜墙">2-4 铁壁铜墙</button>
+    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-5 开平辟地">2-5 开平辟地</button>
+    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-6 循序渐进">2-6 循序渐进</button>
+    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="3-1 自得其乐">3-1 自得其乐</button>
+    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="3-2 循循善诱">3-2 循循善诱</button>
+    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="3-3 虚怀若谷">3-3 虚怀若谷</button>
+    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="4-3 自救之术">4-3 自救之术</button>
+    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-1 口是心非">5-1 口是心非</button>
 
-        </div>
-    </form>
+    <!-- Add more buttons as needed -->
+</form>
+
 
     <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+        var buttons = document.querySelectorAll("#judge_form button");
+        buttons.forEach(function(button) {
+            button.classList.add("m-2", "bg-purple-500", "hover:bg-purple-700", "text-white", "rounded-lg");
+                    button.addEventListener('click', function() {
+
+                        var caption = this.getAttribute('data-caption');
+                        sendCaption(caption);
+
+                                buttons.forEach(function(button) {
+            button.classList.remove("bg-gray-900");
+
+                    });
+                                            this.classList.add('bg-gray-900');
+                    });
+        });
+    });
             var promptForm = document.getElementById('prompt_form');
             var resultContainer = document.getElementById('resultContainer');
+            function sendCaption(caption) {
+                // Initialize a new AJAX request
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', '/judge', true);
+                xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
 
+                // Set up what happens when the request is successful
+                xhr.onload = function () {
+                    if (xhr.status >= 200 && xhr.status < 400) {
+                        // Handle success
+                        var response = JSON.parse(xhr.responseText);
+                        console.log(response.result);
+                        document.getElementById("question").textContent  = response.result;
+                        document.getElementById("wholequestion").textContent  = response.question;
+                    } else {
+                        // Handle error
+                        console.error('Error from server');
+                    }
+                };
+
+                // Set up what happens in case of error
+                xhr.onerror = function () {
+                    // Handle network errors
+                    console.error('Network error');
+                };
+
+                // Send the AJAX request with the caption as data
+                xhr.send(JSON.stringify({caption: caption}));
+            }
+            document.addEventListener('DOMContentLoaded', function() {
+                var buttons = document.querySelectorAll('bg-purple-500 hover:bg-purple-700 text-white rounded-lg');
+                buttons.forEach(function(button) {
+                    button.addEventListener('click', function() {
+                        var caption = this.getAttribute('data-caption');
+                        sendCaption(caption);
+                    });
+                });
+            });
             function addUserChat(prompt) {
                 var userMessageElement = document.createElement("p");
                 userMessageElement.classList.add("border-dashed", "bg-gray-200", "p-2");
@@ -99,6 +191,7 @@
                 }
 
             });
+
 
     </script>
 </div>

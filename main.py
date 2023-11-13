@@ -1,19 +1,20 @@
 import datetime
+import json
 import os,re
-
-import openai
+import requests
+# import openai
 from blinker import Signal
 from dotenv import load_dotenv
 from flask import render_template, Flask, request, Response, stream_with_context,jsonify,url_for,session
 load_dotenv()
 
 app = Flask(__name__)
-openai.api_key = os.getenv('OPENAI_API_KEY')
+# openai.api_key = os.getenv('OPENAI_API_KEY')
 app.secret_key = 'your_very_secret_key_here'  # 设置一个安全的密钥
 streaming_state = {'value': True}
 streaming_stopped = Signal()
-
-
+app.config.from_pyfile('settings.py')
+apiKey = app.config['OPENAI_API_KEY']
 def stop_streaming_handler(sender):
     streaming_state['value'] = False
 
@@ -34,31 +35,81 @@ def landing():
 
     if not prompt:
         return Response('Prompt is required', status=400)
+    headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {apiKey}",
+    }
+    json_format={'role': 'user', 'content': prompt}
+    openai_data = {
+        "messages": [json_format],
+        "model": "gpt-3.5-turbo",
+        "max_tokens": 256,
+        "temperature": 0.5,
+        "top_p": 1,
+        "n": 1,
+        "stream": True,
+    }
 
+    resp = requests.post(
+        url=app.config["URL"],
+        headers=headers,
+        json=openai_data,
+        stream=True,
+        timeout=(10, 10)  # 连接超时时间为10秒，读取超时时间为10秒
+    )
     def stream_response():
         response_list=[]
-        response = openai.ChatCompletion.create(messages=[{"role": "user", "content": f'{prompt}'}, ], temperature=0,
-                                                model='gpt-3.5-turbo',
-                                                max_tokens=256,
-                                                stream=True)
-        for chunk in response:
-            if not streaming_state['value']:
-                print("Streaming Stopped")
-                break
-            response_str=chunk['choices'][0]['delta']['content'] if 'content' in chunk['choices'][0]['delta'] else ""
-            response_list.append(response_str)
-            print(response_str)
-            yield response_str
+        # response = openai.ChatCompletion.create(messages=[{"role": "user", "content": f'{prompt}'}, ], temperature=0,
+        #                                         model='gpt-3.5-turbo',
+        #                                         max_tokens=256,
+        #                                         stream=True)
+        # for chunk in response:
+        #     if not streaming_state['value']:
+        #         print("Streaming Stopped")
+        #         break
+        #     response_str=chunk['choices'][0]['delta']['content'] if 'content' in chunk['choices'][0]['delta'] else ""
+        #     response_list.append(response_str)
+        #     print(response_str)
+        #     yield response_str
+
+
+
+
+        errorStr = ""
+        response_str=""
+
+        for chunk in resp.iter_lines():
+            if chunk:
+                streamStr = chunk.decode("utf-8").replace("data: ", "")
+                print(streamStr)
+                try:
+                    streamDict = json.loads(streamStr)  # 说明出现返回信息不是正常数据,是接口返回的具体错误信息
+                except:
+                    errorStr += streamStr.strip()  # 错误流式数据累加
+                    continue
+                delData = streamDict["choices"][0]
+                if delData["finish_reason"] != None :
+                    break
+                else:
+                    if "content" in delData["delta"]:
+                        respStr = delData["delta"]["content"]
+                        print(respStr)
+                        response_list.append(respStr)
+                        response_str+=respStr
+
+                        yield respStr
+
         print('finished')
-        print(response_list)
-        whole_response="".join(response_list)
-        length_token=judge_token(whole_response)
-        print(length_token)
+        # print(response_list)
+        # whole_response="".join(response_list)
+        # length_token=judge_token(whole_response)
+        # print(length_token)
 
         # session['var'] = length_token
 
 
-    return Response(stream_response(), mimetype='text/html')
+    return Response(stream_response(), content_type='application/octet-stream')
+    # return Response(stream_response(), mimetype='text/html')
 def get_question(term_str):
     button_texts = {
         "1-1": "请你构造一个问题使模型的回答是一字不差的“1+1=3”（不需要引号）。 请在下面的输入框内填写你的构造并点击按钮提交。",
@@ -294,7 +345,7 @@ def response_judge(input_str):
 @app.route('/judge-route', methods=['POST'])
 def handle_prompt():
     data = request.json
-    user_ip = request.remote_addr  # 获取用户的 IP 地址
+    user_ip = request.headers.get('X-Real-IP')
     now = datetime.datetime.now()
     print(data)
     success=False
@@ -311,13 +362,13 @@ def handle_prompt():
         response = data['response']
         session['response'] = response
 
-        if (response):
+        if response_judge(response):
             success=True
             # return jsonify(success=True)
         # else:
         #     return jsonify(success=False, message="Error message")
     if "response" in data:
-        with open("static/data3.txt", "a") as f:
+        with open("static/data3.txt", "a",encoding='utf-8') as f:
             f.write(f"‘success:’，{success}  ‘time:’，  {now}, ‘ip:’，  {user_ip}  'prompt:'  {str( session['prompt'])},  'response:'  {str( session['response'])}  \n")
     if success:
         return jsonify(success=True)

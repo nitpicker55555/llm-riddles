@@ -34,5 +34,11 @@ upload_file_with_key(
 """
 scp -i C:\Users\Morning\.ssh\ssh-key-2023-02-27.key C:\Users\Morning\Desktop\my_project\llm_riddle\main.py opc@130.61.253.72:/www/wwwroot/flask_ques/
 scp -i C:\Users\Morning\.ssh\ssh-key-2023-02-27.key C:\Users\Morning\Desktop\my_project\llm_riddle\templates\chat.html opc@130.61.253.72:/www/wwwroot/flask_ques/templates/
+scp -i C:\Users\Morning\.ssh\ssh-key-2023-02-27.key C:\Users\Morning\Desktop\my_project\llm_riddle\settings.py opc@130.61.253.72:/www/wwwroot/flask_ques/
+
+scp -i  C:\Users\Morning\.ssh\ssh-key-2023-02-27.key -r C:\Users\Morning\Desktop\my_project\llm_riddle\* opc@130.61.253.72:/www/wwwroot/flask_ques/
+
+
+scp -i C:\Users\Morning\.ssh\ssh-key-2023-02-27.key C:\Users\Morning\Desktop\my_project\llm_riddle\settings.py opc@130.61.253.72:/www/wwwroot/gpt/
 
 """

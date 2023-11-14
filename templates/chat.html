@@ -7,8 +7,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+<!--    <link rel="stylesheet" href="../statics/style.css">-->
     <title>我被LLM包围啦！</title>
     <style>
+        #timer {
+            display: none;
+            position: relative; /* 确保div也是定位的 */
+            font-weight: bold;
+            font-size: 2em;
+            color: gray;
+            text-align: center;
+        }
+        #timer2 {
+            display: none;
+            position: relative; /* 确保div也是定位的 */
+            font-weight: bold;
+            font-size: 1em;
+            color: gray;
+            text-align: center;
+        }
+        #speakInput{
+            display: none;
+        }
+        #championship{
+            display: none;
+        }
         html, body {
             /*height: 100%;*/
             margin: 0;
@@ -39,7 +62,15 @@
 
 
 <body >
+<!--<div id="canvas-container"></div>-->
 <div class="content-container">
+
+    <!-- partial -->
+<!--    <script src="../statics/script.js"></script>-->
+    <h1 id="timer">0 m 0 s</h1>
+    <h1 id="timer2">最佳成绩27 分 57 秒;冠军留言：😉</h1>
+    <input type="text" id="speakInput" placeholder="输入通关留言吧！" class="w-full px-4 border-2 border-purple-700 py-2 rounded-md bg-white placeholder-gray-500 focus:outline-none">
+    <button onclick="submitData()" id="championship" class="w-full px-4 py-2 rounded-md bg-purple-700 text-white hover:bg-purple-700 focus:outline-none">提交</button>
     <h1  class="title_str" id="passed_num">
         完蛋！
     </h1>
@@ -97,18 +128,116 @@
     <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-3 超级堡垒">2-3 超级堡垒</button>
     <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-4 铁壁铜墙">2-4 警世名言</button>
     <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-5 开平辟地">2-5 开天辟地</button>
-    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-6 循序渐进">2-6 循序渐进</button>
+    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-6 得寸进狗">2-6 得寸进狗</button>
     <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="3-1 自得其乐">3-1 自得其乐</button>
     <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="3-2 循循善诱">3-2 循循善诱</button>
     <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="3-3 虚怀若谷">3-3 虚怀若谷</button>
     <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="4-3 自救之术">4-3 自救之术</button>
     <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-1 口是心非">5-1 口是心非</button>
+<!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-2 循环往复">5-2 循环往复</button>-->
+<!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-3 惜字如金">5-3 惜字如金</button>-->
+<!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-4 json大王">5-4 json大王</button>-->
+<!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-5 就忘初心">5-5 就忘初心</button>-->
+<!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-6 不忘初心">5-6 不忘初心</button>-->
+<!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-7 就忘初心">5-7 就忘初心</button>-->
 
     <!-- Add more buttons as needed -->
 </form>
 
 
     <script>
+
+        var timer; // 用于存储计时器
+        var seconds = 0; // 设置初始时间
+
+        function startTimer() {
+            // 获取h1标签
+            var timerElement = document.getElementById("timer");
+            var timerElement2 = document.getElementById("timer2");
+            // 显示计时器
+            timerElement.style.display = 'block';
+            timerElement2.style.display='block';
+            // 防止多次点击创建多个计时器
+            if (timer) {
+                clearInterval(timer);
+            }
+
+            // 每秒更新时间
+            timer = setInterval(function() {
+                seconds++;
+                var minutes = Math.floor(seconds / 60); // 计算分钟
+                var remainingSeconds = seconds % 60;    // 计算剩余秒数
+
+                // 格式化显示
+                timerElement.innerHTML = minutes + " 分 " + remainingSeconds + " 秒";
+            }, 1000);
+        }
+        function stopTimer() {
+            if (timer) {
+                clearInterval(timer); // 清除计时器
+            }
+        }
+        function convertToSeconds(timeStr) {
+            // 分割字符串以获取分钟和秒数
+            const parts = timeStr.match(/(\d+)\s*分\s*(\d+)\s*秒/);
+            if (parts && parts.length === 3) {
+                const minutes = parseInt(parts[1], 10);
+                const seconds = parseInt(parts[2], 10);
+                return minutes * 60 + seconds; // 将分钟转换为秒并加上秒数
+            } else {
+                return 0; // 如果格式不匹配，则返回 0 或错误处理
+            }
+        }
+        function convertToMinAndSec(seconds) {
+            // 分割字符串以获取分钟和秒数
+
+            var minutes = Math.floor(seconds / 60); // 计算分钟
+            var remainingSeconds = seconds % 60;    // 计算剩余秒数
+            return minutes + " 分 " + remainingSeconds + " 秒";
+
+
+        }
+        // 示例使用
+
+        function submitData() {
+            // 获取文本框和时间标签的值
+            var speakValue = document.getElementById('speakInput').value;
+            // var timeValue = "20 分 10 秒";
+            var timeValue = document.getElementById('timer').innerHTML;
+
+            const totalSeconds = convertToSeconds(timeValue);
+            console.log("totalSeconds",totalSeconds); // 应该输出 1210（即 20*60 + 10）
+            // 发送数据到 Flask 后端
+            fetch('/api/add_entry', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ speak: speakValue, time: totalSeconds })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    alert(data['message']);
+                    if (data['champion']!==""){
+                        alert(data['champion']);
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+        }
+        function addCanvas() {
+            var canvas = document.createElement('canvas');
+            canvas.id = 'confetti';
+            canvas.style.position = 'fixed'; // 或 'absolute'
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            canvas.style.zIndex = '9999'; // 确保它在最上层
+            document.body.appendChild(canvas); // 直接添加到 body 可能更合适
+        }
 
                     document.addEventListener("DOMContentLoaded", function() {
         var buttons = document.querySelectorAll("#judge_form button");
@@ -195,7 +324,24 @@
 
                 var prompt = promptForm.elements.prompt.value;
 
-                    try {
+                startTimer();
+
+                    fetch('/api/min_time')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                document.getElementById('timer2').innerHTML = 'No data found';
+                            } else {
+                                console.log(`Time: ${data.time}, Speak: ${data.speak}`)
+                                document.getElementById('timer2').innerHTML =
+                                    `最佳成绩: ${convertToMinAndSec(data.time)}, 冠军留言: ${data.speak}`;
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+
+
+
+                try {
                         const response = await fetch('/judge-route', {  //判断input
                             method: 'POST',
                             headers: {
@@ -266,6 +412,7 @@
                                     },
                                     body: JSON.stringify({ response:  ai_raw_message }),
                                 });
+                                console.log("response",response)
 
                                 const response_result =  await response.json();
                                 console.log("response_result",response_result)
@@ -277,17 +424,19 @@
                                         if(button.classList.contains('bg-gray-900')) {
                                             // 输出按钮的文本（caption）
                                             button.classList.add("bg-green-900");
-                                            console.log('找到按钮，标题为:', button);
+                                            console.log(button);
                                         }
 
                                     });
-                                    var passed_num=0
+                                    var passed_num=14;
+
                                     buttons.forEach(function(button) {
                                         // 检查按钮的类名是否包含'bg-gray-900'
                                         if(button.classList.contains('bg-green-900')) {
                                             // 输出按钮的文本（caption）
                                             passed_num+=1;
                                             console.log('passed_num ', passed_num);
+
                                         }
 
 
@@ -295,17 +444,27 @@
                                     document.getElementById('passed_num').innerHTML =
                                         '<span style="color: green;">过关：' + passed_num.toString() + '</span>' +
                                         '<span style="color: gray;">' + "/15" + '</span>';
+                                    if (passed_num===15){
+                                        stopTimer();
+
+                                        document.getElementById("championship").style.display='block';
+                                        document.getElementById("speakInput").style.display='block';
+                                        document.getElementById("flaskResponse").value="通关！！！！"
+                                        alert("恭喜通关！！！填写你的通关留言吧！")
+
+                                    }
 
                                 } else {
                                     // addUserChat("输出结果不符合当前关卡要求！","error")
-                                    document.getElementById("flaskResponse").value="输出结果不符合当前关卡要求(注意空格也算作字数)！以下是response的分析，也许对你有帮助：\n"+processed_error_indication
+                                    console.log("processed_error_indication",processed_error_indication)
+                                    document.getElementById("flaskResponse").value="输出结果不符合当前关卡要求(注意空格也算作字数)！以下是QA的分析，也许对你有帮助：\n"+processed_error_indication
                                     console.log('output judge not success:', response_result.message);
                                     buttons.forEach(function(button) {
                                         // 检查按钮的类名是否包含'bg-gray-900'
                                         if(button.classList.contains('bg-gray-900')) {
                                             // 输出按钮的文本（caption）
                                             button.classList.add("bg-gray-600");
-                                            console.log('找到按钮，标题为:', button);
+                                            console.log(button);
                                         }
 
                                     });
@@ -324,12 +483,16 @@
                                 if(button.classList.contains('bg-gray-900')) {
                                     // 输出按钮的文本（caption）
                                     button.classList.add("bg-gray-600");
-                                    console.log('找到按钮，标题为:', button);
+                                    console.log(button);
                                 }
                                 else {
                                     // console.log('按钮，标题为:', button.caption);
                                 }
                             });
+                            console.log("run canvas")
+                            // addCanvas();
+
+
 
                         }
                     } catch (error) {

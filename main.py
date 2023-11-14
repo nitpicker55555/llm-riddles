@@ -1,20 +1,90 @@
 import datetime
 import json
+import math
 import os,re
 import requests
 # import openai
 from blinker import Signal
 from dotenv import load_dotenv
 from flask import render_template, Flask, request, Response, stream_with_context,jsonify,url_for,session
+from flask_sqlalchemy import SQLAlchemy
+
 load_dotenv()
 
 app = Flask(__name__)
 # openai.api_key = os.getenv('OPENAI_API_KEY')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.secret_key = 'your_very_secret_key_here'  # 设置一个安全的密钥
 streaming_state = {'value': True}
 streaming_stopped = Signal()
 app.config.from_pyfile('settings.py')
 apiKey = app.config['OPENAI_API_KEY']
+db = SQLAlchemy(app)
+# 定义数据库模型
+class DbModel(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    time = db.Column(db.Integer, nullable=False)
+    speak = db.Column(db.String(120), nullable=False)
+
+    def __repr__(self):
+        return f'<DbModel {self.id}>'
+# 创建数据库表
+with app.app_context():
+    db.create_all()
+# 存入用户信息的路由
+@app.route('/api/add_entry', methods=['POST'])
+def add_entry():
+    champion_poem="""
+哥哥哥哥我爱你，就像老鼠爱大米，\n
+你的功劳比天大，三皇五帝不如你。\n
+哥哥哥哥我爱你，总想扑进你怀里，\n
+我到东瀛采药去，找回仙丹送给你。\n
+哥哥哥哥我爱你，别人没啥了不起。\n
+等我马上挖个坑，黑子全都埋土里。\n
+哥哥哥哥我爱你，如果坏蛋要来袭，\n
+我用身体修长城，填进砖墙保护你。\n
+
+    """
+    # response = requests.get('/api/min_time')
+    # data = response.json()  # 解析JSON数据
+    # get_latest=data
+    # print("get_latest",get_latest)
+
+
+    data = request.json
+    get_latest=session['best_time']
+    print(get_latest)
+    min_str = math.floor(data['time'] / 60)
+    sec_str = data['time'] % 60
+    if data['time']<get_latest:
+
+        champion_str = {'message': '遥遥领先！轻舟已过万重山！你是冠军！\n\n\n你%s分%s秒的成绩是不朽的丰碑！你的留言会成为我们人生道路上的启明灯！\n\n啊！迪迦奥特曼只是拯救了世界，而你，是大模型之神！！！神啊！请允许我为您念一首诗！'%(min_str,sec_str),
+                        'champion':champion_poem}
+    else:
+        champion_str={'message': '轻舟已过万重山！\n祝贺你，你成为了大模型的爸爸！\n爸爸以%s分%s秒通关，留言成功！'%(min_str,sec_str),'champion':''}
+    new_entry = DbModel(time=data['time'], speak=data['speak'])
+    db.session.add(new_entry)
+    db.session.commit()
+
+
+
+    return jsonify(champion_str), 201
+# 读取用户信息的路由
+@app.route('/api/min_time', methods=['GET'])
+def api_get_min_time():
+    print("DbModel")
+    # 假设你的模型类名为 YourModel，且包含字段 time 和 speak
+
+    min_time_entry = DbModel.query.order_by(DbModel.time).first()
+    print(min_time_entry)
+
+    if min_time_entry:
+        session['best_time'] = min_time_entry.time
+        return jsonify({'time': min_time_entry.time, 'speak': min_time_entry.speak})
+    else:
+        session['best_time'] = 2350
+        return jsonify({'time': 2350, 'speak': "(●'◡'●)🤭"})
+
 def stop_streaming_handler(sender):
     streaming_state['value'] = False
 
@@ -81,7 +151,7 @@ def landing():
         for chunk in resp.iter_lines():
             if chunk:
                 streamStr = chunk.decode("utf-8").replace("data: ", "")
-                print(streamStr)
+                # print(streamStr)
                 try:
                     streamDict = json.loads(streamStr)  # 说明出现返回信息不是正常数据,是接口返回的具体错误信息
                 except:
@@ -93,7 +163,7 @@ def landing():
                 else:
                     if "content" in delData["delta"]:
                         respStr = delData["delta"]["content"]
-                        print(respStr)
+                        # print(respStr)
                         response_list.append(respStr)
                         response_str+=respStr
 
@@ -160,7 +230,11 @@ def extract_numbers(s):
         result_list=re.findall(r'\d+', s)
     except:
         pass
-    return result_list
+    if result_list!=[]:
+        lst_int = [int(item) for item in result_list]
+    else:
+        lst_int=result_list
+    return lst_int
 
 
 def is_square_root_of_square(num1, num2):
@@ -178,9 +252,9 @@ def have_common_chars(str1, str2):
     for char in str1:
         # 如果字符出现在第二个字符串中，则返回True
         if char in str2:
-            return True
+            return False
     # 如果没有找到重复字符，则返回False
-    return False
+    return True
 
 def input_judge(input_str):
     term_str=session['term']
@@ -335,11 +409,28 @@ def response_judge(input_str):
         pre_num = int(prompt_str)
         num_list = extract_numbers(input_str)
         for i in num_list:
-            if abs(i - pre_num) == 1:
+            if abs(int(i) - pre_num) == 1:
                 return True
 
     elif term_str == "5-1":
         return have_common_chars(input_str,prompt_str)
+    # elif term_str == "5-2":
+    #     return have_common_chars(input_str,prompt_str)
+    # elif term_str == "5-3":
+    #     if len(input_str)<=16:
+    #         return True
+    #
+    # elif term_str == "5-4":
+    #     return have_common_chars(input_str, prompt_str)
+    #
+    # elif term_str == "5-5":
+    #     return have_common_chars(input_str, prompt_str)
+    #
+    # elif term_str == "5-6":
+    #     return have_common_chars(input_str, prompt_str)
+    #
+    # elif term_str == "5-7":
+    #     return have_common_chars(input_str, prompt_str)
 
 
 @app.route('/judge-route', methods=['POST'])
@@ -365,11 +456,12 @@ def handle_prompt():
         if response_judge(response):
             success=True
             # return jsonify(success=True)
+
         # else:
         #     return jsonify(success=False, message="Error message")
     if "response" in data:
-        with open("static/data3.txt", "a",encoding='utf-8') as f:
-            f.write(f"‘success:’，{success}  ‘time:’，  {now}, ‘ip:’，  {user_ip}  'prompt:'  {str( session['prompt'])},  'response:'  {str( session['response'])}  \n")
+        with open("statics/data3.txt", "a", encoding='utf-8') as f:
+            f.write(f"‘term:’，{session['term']}     ‘success:’，{success}  ‘time:’，  {now}, ‘ip:’，  {user_ip}  'prompt:'  {str( session['prompt'])},  'response:'  {str( session['response'])}  \n")
     if success:
         return jsonify(success=True)
     else:
@@ -392,10 +484,12 @@ def judge_token(text):
 def process_data():
     print("process")
     data = request.json #response全文
+    length=str(judge_token(session['prompt']))
+    num_list=str(extract_numbers(session['prompt']))
+    result="Question:\nstring length: "+length+"\n"+"number list in string: "+num_list
     length=str(judge_token(data['value']))
     num_list=str(extract_numbers(data['value']))
-
-    result="string length: "+length+"\n"+"number list in string: "+num_list
+    result+="\nResponse:\nstring length: "+length+"\n"+"number list in string: "+num_list
 
     # 对数据进行处理，例如仅返回原样的值
     return jsonify({'response': result })

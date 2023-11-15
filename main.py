@@ -85,7 +85,7 @@ def api_get_min_time():
     else:
         session['best_time'] = 2350
         print(session, "session in min_time")
-        return jsonify({'time': 2350, 'speak': "梅西是神🤭"})
+        return jsonify({'time': 2350, 'speak': "梅西食神🤭"})
 
 def stop_streaming_handler(sender):
     streaming_state['value'] = False
@@ -463,7 +463,7 @@ def handle_prompt():
         #     return jsonify(success=False, message="Error message")
     print("session",session,"data",data)
     if "response" in data:
-        with open("statics/data3.txt", "a", encoding='utf-8') as f:
+        with open("static/data3.txt", "a", encoding='utf-8') as f:
             f.write(f"‘term:’，{session['term']}     ‘success:’，{success}  ‘time:’，  {now}, ‘ip:’，  {user_ip}  'prompt:'  {str( session['prompt'])},  'response:'  {str( session['response'])}  \n")
     if success:
         return jsonify(success=True)

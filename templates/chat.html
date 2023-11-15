@@ -7,9 +7,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.5"></script>
-<!--    <link rel="stylesheet" href="../statics/style.css">-->
+    <!--    <link rel="stylesheet" href="../statics/style.css">-->
     <title>我被LLM包围啦！</title>
     <style>
+        #myConfettiContainer {
+            pointer-events: none;
+            position: fixed;  /* 或使用 'fixed'，如果需要在滚动时保持位置不变 */
+            top: 0;
+            width: 100%;        /* 容器宽度为100% */
+            z-index: 9;
+            /* 可以根据需要添加更多的样式 */
+        }
         #timer {
             display: none;
             position: relative; /* 确保div也是定位的 */
@@ -19,7 +27,7 @@
             text-align: center;
         }
         #timer2 {
-            display: none;
+            /*display: none;*/
             position: relative; /* 确保div也是定位的 */
             font-weight: bold;
             font-size: 1em;
@@ -51,6 +59,7 @@
         }
         .content-container {
             position: relative; /* 确保div也是定位的 */
+            top: 10px;
             text-align: center;
             z-index: 4; /* 设置较高的z-index */
             /*margin-top: 10%;*/
@@ -64,11 +73,14 @@
 <body >
 <!--<div id="canvas-container"></div>-->
 <div class="content-container">
+    <div id="myConfettiContainer">
+        <!-- 这里是放置脚本的容器 -->
+    </div>
 
     <!-- partial -->
-<!--    <script src="../statics/script.js"></script>-->
+    <!--    <script src="../statics/script.js"></script>-->
     <h1 id="timer">0 m 0 s</h1>
-    <h1 id="timer2">最佳成绩27 分 57 秒;冠军留言：😉</h1>
+    <h1 id="timer2">最佳成绩;冠军留言：</h1>
     <input type="text" id="speakInput" placeholder="输入通关留言吧！" class="w-full px-4 border-2 border-purple-700 py-2 rounded-md bg-white placeholder-gray-500 focus:outline-none">
     <button onclick="submitData()" id="championship" class="w-full px-4 py-2 rounded-md bg-purple-700 text-white hover:bg-purple-700 focus:outline-none">提交</button>
     <h1  class="title_str" id="passed_num">
@@ -77,9 +89,10 @@
     <h1  class="title_str">
         我被LLM包围啦！
     </h1>
+
     <div class="w-full max-w-md mx-auto p-6 rounded-md bg-white shadow-lg">
 
-                <h1 class="text-2xl font-bold mb-4 text-center" id="question">
+        <h1 class="text-2xl font-bold mb-4 text-center" id="question">
             🙂
         </h1>
 
@@ -99,160 +112,170 @@
         </div>
         <form method="post" id='prompt_form' class="mt-6">
             <input
-                type="text"
-                id="prompt" name="prompt"
-                class="w-full px-4 border-2 border-purple-700 py-2 rounded-md bg-white placeholder-gray-500 focus:outline-none"
-                placeholder="构建提问" required
+                    type="text"
+                    id="prompt" name="prompt"
+                    class="w-full px-4 border-2 border-purple-700 py-2 rounded-md bg-white placeholder-gray-500 focus:outline-none"
+                    placeholder="构建提问" required
             />
             <div class="flex justify-center mt-4">
                 <button
-                    id="generateBtn" type="submit"
-                    class="w-full px-4 py-2 rounded-md bg-purple-700 text-white hover:bg-purple-700 focus:outline-none"
+                        id="generateBtn" type="submit"
+                        class="w-full px-4 py-2 rounded-md bg-purple-700 text-white hover:bg-purple-700 focus:outline-none"
                 >
                     提交
                 </button>
             </div>
         </form>
         <!-- Add this form to your existing HTML where you want the new buttons -->
-                <h1 class="text-2xl font-bold mb-4 text-center">
+        <h1 class="text-2xl font-bold mb-4 text-center">
             选择关卡
         </h1>
-<form id='judge_form'  class="grid grid-cols-3 gap-4"  >
-    <!-- Replace 'Button Caption 1' with your actual button captions -->
-  <button type="button"  data-caption="1-1 初来乍到">1-1 初来乍到</button>
-    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="1-2 小试牛刀">1-2 小试牛刀</button>
-    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="1-3 短兵相接">1-3 短兵相接</button>
-    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="1-4 移形换影">1-4 移形换影</button>
-    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-1 展翅飞翔">2-1 质数长度</button>
-    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-2 虚张声势">2-2 虚张声势</button>
-    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-3 超级堡垒">2-3 超级堡垒</button>
-    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-4 铁壁铜墙">2-4 警世名言</button>
-    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-5 开平辟地">2-5 开天辟地</button>
-    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-6 得寸进狗">2-6 得寸进狗</button>
-    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="3-1 自得其乐">3-1 自得其乐</button>
-    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="3-2 循循善诱">3-2 循循善诱</button>
-    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="3-3 虚怀若谷">3-3 虚怀若谷</button>
-    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="4-3 自救之术">4-3 自救之术</button>
-    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-1 口是心非">5-1 口是心非</button>
-<!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-2 循环往复">5-2 循环往复</button>-->
-<!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-3 惜字如金">5-3 惜字如金</button>-->
-<!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-4 json大王">5-4 json大王</button>-->
-<!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-5 就忘初心">5-5 就忘初心</button>-->
-<!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-6 不忘初心">5-6 不忘初心</button>-->
-<!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-7 就忘初心">5-7 就忘初心</button>-->
 
-    <!-- Add more buttons as needed -->
-</form>
+        <form id='judge_form'  class="grid grid-cols-3 gap-4"  >
+            <!-- Replace 'Button Caption 1' with your actual button captions -->
+            <button type="button"  data-caption="1-1 初来乍到">1-1 初来乍到</button>
+            <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="1-2 小试牛刀">1-2 小试牛刀</button>
+            <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="1-3 短兵相接">1-3 短兵相接</button>
+            <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="1-4 移形换影">1-4 移形换影</button>
+            <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-1 展翅飞翔">2-1 质数长度</button>
+            <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-2 虚张声势">2-2 虚张声势</button>
+            <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-3 超级堡垒">2-3 超级堡垒</button>
+            <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-4 铁壁铜墙">2-4 警世名言</button>
+            <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-5 开平辟地">2-5 开天辟地</button>
+            <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-6 得寸进狗">2-6 得寸进狗</button>
+            <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="3-1 自得其乐">3-1 自得其乐</button>
+            <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="3-2 循循善诱">3-2 循循善诱</button>
+            <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="3-3 虚怀若谷">3-3 虚怀若谷</button>
+            <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="4-3 自救之术">4-3 自救之术</button>
+            <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-1 口是心非">5-1 口是心非</button>
+            <!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-2 循环往复">5-2 循环往复</button>-->
+            <!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-3 惜字如金">5-3 惜字如金</button>-->
+            <!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-4 json大王">5-4 json大王</button>-->
+            <!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-5 就忘初心">5-5 就忘初心</button>-->
+            <!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-6 不忘初心">5-6 不忘初心</button>-->
+            <!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-7 就忘初心">5-7 就忘初心</button>-->
+
+            <!-- Add more buttons as needed -->
+        </form>
+    </div>
+    </div>
+        <script>
+            window.onload = function() {
+                // 这里放置您希望在页面加载完成后执行的代码
+                console.log("页面加载完成！");
+                fetch('/api/min_time')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            document.getElementById('timer2').innerHTML = 'No data found';
+                        } else {
+                            console.log(`Time: ${data.time}, Speak: ${data.speak}`)
+                            document.getElementById('timer2').innerHTML =
+                                `最佳成绩: ${convertToMinAndSec(data.time)}, 冠军留言: ${data.speak}`;
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                // 其他功能或逻辑
+            };
+            var timer; // 用于存储计时器
+            var seconds = 0; // 设置初始时间
+
+            function startTimer() {
+                // 获取h1标签
+                var timerElement = document.getElementById("timer");
+                var timerElement2 = document.getElementById("timer2");
+                // 显示计时器
+                timerElement.style.display = 'block';
+                // timerElement2.style.display='block';
+                // 防止多次点击创建多个计时器
+                if (timer) {
+                    // clearInterval(timer);
+                }else{
+                    // 每秒更新时间
+                    timer = setInterval(function() {
+                        seconds++;
+                        var minutes = Math.floor(seconds / 60); // 计算分钟
+                        var remainingSeconds = seconds % 60;    // 计算剩余秒数
+
+                        // 格式化显示
+                        timerElement.innerHTML = minutes + " 分 " + remainingSeconds + " 秒";
+                    }, 1000);
+
+                }
 
 
-    <script>
-
-        var timer; // 用于存储计时器
-        var seconds = 0; // 设置初始时间
-
-        function startTimer() {
-            // 获取h1标签
-            var timerElement = document.getElementById("timer");
-            var timerElement2 = document.getElementById("timer2");
-            // 显示计时器
-            timerElement.style.display = 'block';
-            timerElement2.style.display='block';
-            // 防止多次点击创建多个计时器
-            if (timer) {
-                clearInterval(timer);
             }
+            function stopTimer() {
+                if (timer) {
+                    clearInterval(timer); // 清除计时器
+                }
+            }
+            function convertToSeconds(timeStr) {
+                // 分割字符串以获取分钟和秒数
+                const parts = timeStr.match(/(\d+)\s*分\s*(\d+)\s*秒/);
+                if (parts && parts.length === 3) {
+                    const minutes = parseInt(parts[1], 10);
+                    const seconds = parseInt(parts[2], 10);
+                    return minutes * 60 + seconds; // 将分钟转换为秒并加上秒数
+                } else {
+                    return 0; // 如果格式不匹配，则返回 0 或错误处理
+                }
+            }
+            function convertToMinAndSec(seconds) {
+                // 分割字符串以获取分钟和秒数
 
-            // 每秒更新时间
-            timer = setInterval(function() {
-                seconds++;
                 var minutes = Math.floor(seconds / 60); // 计算分钟
                 var remainingSeconds = seconds % 60;    // 计算剩余秒数
+                return minutes + " 分 " + remainingSeconds + " 秒";
 
-                // 格式化显示
-                timerElement.innerHTML = minutes + " 分 " + remainingSeconds + " 秒";
-            }, 1000);
-        }
-        function stopTimer() {
-            if (timer) {
-                clearInterval(timer); // 清除计时器
+
             }
-        }
-        function convertToSeconds(timeStr) {
-            // 分割字符串以获取分钟和秒数
-            const parts = timeStr.match(/(\d+)\s*分\s*(\d+)\s*秒/);
-            if (parts && parts.length === 3) {
-                const minutes = parseInt(parts[1], 10);
-                const seconds = parseInt(parts[2], 10);
-                return minutes * 60 + seconds; // 将分钟转换为秒并加上秒数
-            } else {
-                return 0; // 如果格式不匹配，则返回 0 或错误处理
-            }
-        }
-        function convertToMinAndSec(seconds) {
-            // 分割字符串以获取分钟和秒数
+            // 示例使用
 
-            var minutes = Math.floor(seconds / 60); // 计算分钟
-            var remainingSeconds = seconds % 60;    // 计算剩余秒数
-            return minutes + " 分 " + remainingSeconds + " 秒";
+            function submitData() {
+                // 获取文本框和时间标签的值
+                var speakValue = document.getElementById('speakInput').value;
+                // var timeValue = "20 分 10 秒";
+                var timeValue = document.getElementById('timer').innerHTML;
 
-
-        }
-        // 示例使用
-
-        function submitData() {
-            // 获取文本框和时间标签的值
-            var speakValue = document.getElementById('speakInput').value;
-            // var timeValue = "20 分 10 秒";
-            var timeValue = document.getElementById('timer').innerHTML;
-
-            const totalSeconds = convertToSeconds(timeValue);
-            console.log("totalSeconds",totalSeconds); // 应该输出 1210（即 20*60 + 10）
-            // 发送数据到 Flask 后端
-            fetch('/api/add_entry', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ speak: speakValue, time: totalSeconds })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data);
-                    alert(data['message']);
-                    if (data['champion']!==""){
-                        alert(data['champion']);
-                    }
+                const totalSeconds = convertToSeconds(timeValue);
+                console.log("totalSeconds",totalSeconds); // 应该输出 1210（即 20*60 + 10）
+                // 发送数据到 Flask 后端
+                fetch('/api/add_entry', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ speak: speakValue, time: totalSeconds })
                 })
-                .catch((error) => {
-                    console.error('Error:', error);
-                });
-        }
-        function addCanvas() {
-            var canvas = document.createElement('canvas');
-            canvas.id = 'confetti';
-            canvas.style.position = 'fixed'; // 或 'absolute'
-            canvas.style.top = '0';
-            canvas.style.left = '0';
-            canvas.style.width = '100%';
-            canvas.style.height = '100%';
-            canvas.style.zIndex = '9999'; // 确保它在最上层
-            document.body.appendChild(canvas); // 直接添加到 body 可能更合适
-        }
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        alert(data['message']);
+                        if (data['champion']!==""){
+                            alert(data['champion']);
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            }
 
-                    document.addEventListener("DOMContentLoaded", function() {
-        var buttons = document.querySelectorAll("#judge_form button");
-        buttons.forEach(function(button) {
-            button.classList.add("m-2", "bg-gray-400", "hover:bg-gray-900", "text-white", "rounded-lg");
+
+            document.addEventListener("DOMContentLoaded", function() {
+                var buttons = document.querySelectorAll("#judge_form button");
+                buttons.forEach(function(button) {
+                    button.classList.add("m-2", "bg-gray-400", "hover:bg-gray-900", "text-white", "rounded-lg");
                     button.addEventListener('click', function() {
 
                         var caption = this.getAttribute('data-caption');
                         sendCaption(caption);
 
-                                buttons.forEach(function(button) {
-            button.classList.remove("bg-gray-900");
+                        buttons.forEach(function(button) {
+                            button.classList.remove("bg-gray-900");
 
-                    });
-                                            this.classList.add('bg-gray-900');
+                        });
+                        this.classList.add('bg-gray-900');
                         document.getElementById('resultContainer').innerHTML ='';
                         document.getElementById("flaskResponse").value ='';
 
@@ -261,13 +284,13 @@
 
 // 遍历这些按钮
 
-        });
+                });
 
 
-    });
+            });
             var promptForm = document.getElementById('prompt_form');
             var resultContainer = document.getElementById('resultContainer');
-                    var buttons = document.querySelectorAll("#judge_form button");
+            var buttons = document.querySelectorAll("#judge_form button");
             function sendCaption(caption) {
                 // Initialize a new AJAX request
                 var xhr = new XMLHttpRequest();
@@ -297,15 +320,7 @@
                 // Send the AJAX request with the caption as data
                 xhr.send(JSON.stringify({caption: caption}));
             }
-            // document.addEventListener('DOMContentLoaded', function() {
-            //     var buttons = document.querySelectorAll('bg-purple-500 hover:bg-purple-700 text-white rounded-lg');
-            //     buttons.forEach(function(button) {
-            //         button.addEventListener('click', function() {
-            //             var caption = this.getAttribute('data-caption');
-            //             sendCaption(caption);
-            //         });
-            //     });
-            // });
+
             function addUserChat(prompt, mode = "You") {
                 var userMessageElement = document.createElement("p");
                 if (mode === "You") {
@@ -319,185 +334,199 @@
             }
 
             promptForm.addEventListener('submit', async function(event) {
+                startTimer();
                 event.preventDefault();
                 var processed_error_indication
 
                 var prompt = promptForm.elements.prompt.value;
 
-                startTimer();
 
-                    fetch('/api/min_time')
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.error) {
-                                document.getElementById('timer2').innerHTML = 'No data found';
-                            } else {
-                                console.log(`Time: ${data.time}, Speak: ${data.speak}`)
-                                document.getElementById('timer2').innerHTML =
-                                    `最佳成绩: ${convertToMinAndSec(data.time)}, 冠军留言: ${data.speak}`;
-                            }
-                        })
-                        .catch(error => console.error('Error:', error));
+                //
+
+                //
+
 
 
 
                 try {
-                        const response = await fetch('/judge-route', {  //判断input
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({ prompt: prompt }),
-                        });
+                    const response = await fetch('/judge-route', {  //判断input
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ prompt: prompt }),
+                    });
 
-                        const result = await response.json();
+                    const result = await response.json();
 
-                        if (result.success) {
-                            // Do something if the judge function returns true
-                                            addUserChat(prompt);
+                    if (result.success) {
+                        // Do something if the judge function returns true
+                        addUserChat(prompt);
 
-                                            var formData = new FormData(promptForm);
-                                            formData.append('prompt', prompt);
+                        var formData = new FormData(promptForm);
+                        formData.append('prompt', prompt);
 
-                                            promptForm.elements.prompt.value = "";
+                        promptForm.elements.prompt.value = "";
 
-                                            try {
-                                                const response = await fetch('{{url_for('landing')}}', {
-                                                    method: 'POST',
-                                                    body: formData
-                                                });
-                                                const reader = response.body.getReader();
+                        try {
+                            const response = await fetch('{{url_for('landing')}}', {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const reader = response.body.getReader();
 
-                                                var aiMessageElement = document.createElement("p");
-                                                var ai_raw_message=""
-                                                aiMessageElement.classList.add("border", "p-2", "whitespace-pre-line", "py-2", "bg-green-100");
-                                                aiMessageElement.innerHTML = "<strong>AI:</strong>" + " ";
-                                                resultContainer.appendChild(aiMessageElement);
+                            var aiMessageElement = document.createElement("p");
+                            var ai_raw_message=""
+                            aiMessageElement.classList.add("border", "p-2", "whitespace-pre-line", "py-2", "bg-green-100");
+                            aiMessageElement.innerHTML = "<strong>AI:</strong>" + " ";
+                            resultContainer.appendChild(aiMessageElement);
 
-                                                while (true) {
-                                                    const { done, value } = await reader.read();
-                                                    if (done) break;
-                                                    const text = new TextDecoder().decode(value);
-                                                    aiMessageElement.textContent += text;
-                                                    ai_raw_message+=text;
-                                                }
-                                                console.log('ai_raw_message', ai_raw_message);
-                                                fetch('/process_data', {
-                                                    method: 'POST',
-                                                    headers: {
-                                                        'Content-Type': 'application/json',
-                                                    },
-                                                    body: JSON.stringify({ value: ai_raw_message })
-                                                })
-                                                .then(response => response.json())
-                                                .then(data => {
-                                                    // 处理从 Flask 返回的数据
-                                                    console.log('data.response', data.response);
-                                                    processed_error_indication= data.response
-                                                    // document.getElementById("flaskResponse").value = data.response;
+                            while (true) {
+                                const { done, value } = await reader.read();
+                                if (done) break;
+                                const text = new TextDecoder().decode(value);
+                                aiMessageElement.textContent += text;
+                                ai_raw_message+=text;
+                            }
+                            console.log('ai_raw_message', ai_raw_message);
+                            fetch('/process_data', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ value: ai_raw_message })
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    // 处理从 Flask 返回的数据
+                                    console.log('data.response', data.response);
+                                    processed_error_indication= data.response
+                                    // document.getElementById("flaskResponse").value = data.response;
 
-                                                })
-                                                .catch((error) => {
-                                                    console.error('Error:', error);
-                                                });
-
-                                            } catch (error) {
-                                                console.error(error);
-                                            }
-                            try {
-                                const response =await  fetch('/judge-route', {  //判断output
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                    },
-                                    body: JSON.stringify({ response:  ai_raw_message }),
+                                })
+                                .catch((error) => {
+                                    console.error('Error:', error);
                                 });
-                                console.log("response",response)
 
-                                const response_result =  await response.json();
-                                console.log("response_result",response_result)
+                        } catch (error) {
+                            console.error(error);
+                        }
+                        try {
+                            const response =await  fetch('/judge-route', {  //判断output
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ response:  ai_raw_message }),
+                            });
+                            console.log("response",response)
 
-                                if (response_result.success) {
-                                    document.getElementById("flaskResponse").value="成功！"
-                                    buttons.forEach(function(button) {
-                                        // 检查按钮的类名是否包含'bg-gray-900'
-                                        if(button.classList.contains('bg-gray-900')) {
-                                            // 输出按钮的文本（caption）
-                                            button.classList.add("bg-green-900");
-                                            console.log(button);
-                                        }
+                            const response_result =  await response.json();
+                            console.log("response_result",response_result)
 
-                                    });
-                                    var passed_num=14;
+                            if (response_result.success) {
+                                document.getElementById("flaskResponse").value="成功！"
+                                buttons.forEach(function(button) {
+                                    // 检查按钮的类名是否包含'bg-gray-900'
+                                    if(button.classList.contains('bg-gray-900')) {
+                                        // 输出按钮的文本（caption）
+                                        button.classList.add("bg-green-900");
+                                        console.log(button);
+                                    }
 
-                                    buttons.forEach(function(button) {
-                                        // 检查按钮的类名是否包含'bg-gray-900'
-                                        if(button.classList.contains('bg-green-900')) {
-                                            // 输出按钮的文本（caption）
-                                            passed_num+=1;
-                                            console.log('passed_num ', passed_num);
+                                });
+                                var passed_num=12;
 
-                                        }
-
-
-                                    });
-                                    document.getElementById('passed_num').innerHTML =
-                                        '<span style="color: green;">过关：' + passed_num.toString() + '</span>' +
-                                        '<span style="color: gray;">' + "/15" + '</span>';
-                                    if (passed_num===15){
-                                        stopTimer();
-
-                                        document.getElementById("championship").style.display='block';
-                                        document.getElementById("speakInput").style.display='block';
-                                        document.getElementById("flaskResponse").value="通关！！！！"
-                                        alert("恭喜通关！！！填写你的通关留言吧！")
+                                buttons.forEach(function(button) {
+                                    // 检查按钮的类名是否包含'bg-gray-900'
+                                    if(button.classList.contains('bg-green-900')) {
+                                        // 输出按钮的文本（caption）
+                                        passed_num+=1;
+                                        console.log('passed_num ', passed_num);
 
                                     }
 
-                                } else {
-                                    // addUserChat("输出结果不符合当前关卡要求！","error")
-                                    console.log("processed_error_indication",processed_error_indication)
-                                    document.getElementById("flaskResponse").value="输出结果不符合当前关卡要求(注意空格也算作字数)！以下是QA的分析，也许对你有帮助：\n"+processed_error_indication
-                                    console.log('output judge not success:', response_result.message);
-                                    buttons.forEach(function(button) {
-                                        // 检查按钮的类名是否包含'bg-gray-900'
-                                        if(button.classList.contains('bg-gray-900')) {
-                                            // 输出按钮的文本（caption）
-                                            button.classList.add("bg-gray-600");
-                                            console.log(button);
-                                        }
 
-                                    });
+                                });
+                                document.getElementById('passed_num').innerHTML =
+                                    '<span style="color: green;">过关：' + passed_num.toString() + '</span>' +
+                                    '<span style="color: gray;">' + "/15" + '</span>';
+                                if (passed_num===15){
+                                    stopTimer();
+
+                                    document.getElementById("championship").style.display='block';
+                                    document.getElementById("speakInput").style.display='block';
+                                    document.getElementById("flaskResponse").value="通关！！！！"
+                                    alert("恭喜通关！！！填写你的通关留言吧！")
+                                    var colors = ["DodgerBlue", "OliveDrab", "Gold", "Pink", "SlateBlue", "LightBlue", "Violet", "PaleGreen", "SteelBlue", "SandyBrown", "Chocolate", "Crimson"];
+
+                                    startConfetti(3600,1,colors,5000);
+
+                                }else {
+                                    // var colors = ["PaleGreen", "OliveDrab","PaleGreen"];
+                                    var colors = ["DodgerBlue", "OliveDrab", "Gold", "Pink", "SlateBlue", "LightBlue", "Violet", "PaleGreen", "SteelBlue", "SandyBrown", "Chocolate", "Crimson"];
+
+                                    startConfetti(300,1,colors,2500);
                                 }
-                            } catch (error) {
-                                console.log('output judge Error:', error);
+
+                            } else {
+                                // addUserChat("输出结果不符合当前关卡要求！","error")
+                                console.log("processed_error_indication",processed_error_indication)
+                                document.getElementById("flaskResponse").value="输出结果不符合当前关卡要求(注意空格也算作字数)！以下是QA的分析，也许对你有帮助：\n"+processed_error_indication
+                                console.log('output judge not success:', response_result.message);
+                                buttons.forEach(function(button) {
+                                    // 检查按钮的类名是否包含'bg-gray-900'
+                                    if(button.classList.contains('bg-gray-900')) {
+                                        // 输出按钮的文本（caption）
+                                        button.classList.add("bg-gray-600");
+                                        console.log(button);
+                                    }
+
+                                });
+                                console.log("run canvas")
+                                var colors = ["PaleGreen", "OliveDrab","PaleGreen"];
+                                // var colors = ["DodgerBlue", "OliveDrab", "Gold", "Pink", "SlateBlue", "LightBlue", "Violet", "PaleGreen", "SteelBlue", "SandyBrown", "Chocolate", "Crimson"];
+
+                                startConfetti(300,1,colors);
                             }
-
-                        } else {
-                            document.getElementById("flaskResponse").value="输入格式不符合当前关卡要求！(注意空格也算作字数)"
-                            addUserChat("输入格式不符合当前关卡要求！(注意空格也算作字数)","error")
-                            console.log('judge not success:', result.message);
-
-                            buttons.forEach(function(button) {
-                                // 检查按钮的类名是否包含'bg-gray-900'
-                                if(button.classList.contains('bg-gray-900')) {
-                                    // 输出按钮的文本（caption）
-                                    button.classList.add("bg-gray-600");
-                                    console.log(button);
-                                }
-                                else {
-                                    // console.log('按钮，标题为:', button.caption);
-                                }
-                            });
-                            console.log("run canvas")
-                            // addCanvas();
-
-
-
+                        } catch (error) {
+                            console.log('output judge Error:', error);
                         }
-                    } catch (error) {
-                        console.log('judge Error:', error);
+
+                    } else {
+                        document.getElementById("flaskResponse").value="输入格式不符合当前关卡要求！(注意空格也算作字数)"
+                        addUserChat("输入格式不符合当前关卡要求！(注意空格也算作字数)","error")
+                        console.log('judge not success:', result.message);
+
+                        buttons.forEach(function(button) {
+                            // 检查按钮的类名是否包含'bg-gray-900'
+                            if(button.classList.contains('bg-gray-900')) {
+                                // 输出按钮的文本（caption）
+                                button.classList.add("bg-gray-600");
+                                console.log(button);
+                            }
+                            else {
+                                // console.log('按钮，标题为:', button.caption);
+                            }
+                        });
+                        console.log("run canvas")
+                        var colors = [ "Violet","Crimson"];
+                        // var colors = ["DodgerBlue", "OliveDrab", "Gold", "Pink", "SlateBlue", "LightBlue", "Violet", "PaleGreen", "SteelBlue", "SandyBrown", "Chocolate", "Crimson"];
+
+                        startConfetti(300,1,colors);
+
+
+
+
+                        // 将script元素添加到文档中
+
+
+
+
                     }
+                } catch (error) {
+                    console.log('judge Error:', error);
+                }
 
 
 
@@ -505,8 +534,146 @@
             });
 
 
-    </script>
-</div>
+
+            //
+            // function startConfetti(a,b,c,d){
+            //
+            // }
+
+
+
+
+            var maxParticleCount = 150;
+            // var particleSpeed = 2;
+            var startConfetti;
+            var stopConfetti;
+            var toggleConfetti;
+            var removeConfetti;
+
+            // (function() {
+                startConfetti = startConfettiInner;
+                stopConfetti = stopConfettiInner;
+                toggleConfetti = toggleConfettiInner;
+                removeConfetti = removeConfettiInner;
+
+                // var colors = ["DodgerBlue", "OliveDrab", "Gold", "Pink", "SlateBlue", "LightBlue", "Violet", "PaleGreen", "SteelBlue", "SandyBrown", "Chocolate", "Crimson"];
+                var streamingConfetti = false;
+                var animationTimer = null;
+                var particles = [];
+                var waveAngle = 0;
+
+                function resetParticle(particle, width, height,colors) {
+                    particle.color = colors[(Math.random() * colors.length) | 0];
+                    particle.x = Math.random() * width;
+                    particle.y = Math.random() * height - height;
+                    particle.diameter = Math.random() * 10 + 5;
+                    particle.tilt = Math.random() * 10 - 10;
+                    particle.tiltAngleIncrement = Math.random() * 0.07 + 0.05;
+                    particle.tiltAngle = 0;
+                    return particle;
+                }
+
+                function startConfettiInner(maxParticleCount,particleSpeed,colors,tt=1000) {
+                    var container = document.getElementById('myConfettiContainer');
+                    var width = window.innerWidth;
+                    var height = window.innerHeight;
+                    window.requestAnimFrame = (function() {
+                        return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function(callback) {
+                            return window.setTimeout(callback, 16.6666667);
+                        };
+                    })();
+                    var canvas = document.getElementById("confetti-canvas");
+                    if (canvas === null) {
+                        canvas = document.createElement("canvas");
+                        canvas.setAttribute("id", "confetti-canvas");
+                        canvas.setAttribute("style", "display:block;z-index:999999;pointer-events:none");
+                        container.appendChild(canvas);
+                        canvas.width = width;
+                        canvas.height = height;
+                        window.addEventListener("resize", function() {
+                            canvas.width = window.innerWidth;
+                            canvas.height = window.innerHeight;
+                        }, true);
+                    }
+                    var context = canvas.getContext("2d");
+                    while (particles.length < maxParticleCount)
+                        particles.push(resetParticle({}, width, height,colors));
+                    streamingConfetti = true;
+                    if (animationTimer === null) {
+                        (function runAnimation() {
+                            context.clearRect(0, 0, window.innerWidth, window.innerHeight);
+                            if (particles.length === 0)
+                                animationTimer = null;
+                            else {
+                                updateParticles(maxParticleCount,particleSpeed,colors);
+                                drawParticles(context);
+                                animationTimer = requestAnimFrame(runAnimation);
+                            }
+                        })();
+                    }
+                    setTimeout(stopConfettiInner, tt);
+                }
+
+                function stopConfettiInner() {
+                    streamingConfetti = false;
+                }
+
+                function removeConfettiInner() {
+                    stopConfetti();
+                    particles = [];
+                }
+
+                function toggleConfettiInner() {
+                    if (streamingConfetti)
+                        stopConfettiInner();
+                    else
+                        startConfettiInner();
+                }
+
+                function drawParticles(context) {
+                    var particle;
+                    var x;
+                    for (var i = 0; i < particles.length; i++) {
+                        particle = particles[i];
+                        context.beginPath();
+                        context.lineWidth = particle.diameter;
+                        context.strokeStyle = particle.color;
+                        x = particle.x + particle.tilt;
+                        context.moveTo(x + particle.diameter / 2, particle.y);
+                        context.lineTo(x, particle.y + particle.tilt + particle.diameter / 2);
+                        context.stroke();
+                    }
+                }
+
+                function updateParticles(maxParticleCount,particleSpeed,colors) {
+                    var width = window.innerWidth;
+                    var height = window.innerHeight;
+                    var particle;
+                    waveAngle += 0.01;
+                    for (var i = 0; i < particles.length; i++) {
+                        particle = particles[i];
+                        if (!streamingConfetti && particle.y < -15)
+                            particle.y = height + 100;
+                        else {
+                            particle.tiltAngle += particle.tiltAngleIncrement;
+                            particle.x += Math.sin(waveAngle);
+                            particle.y += (Math.cos(waveAngle) + particle.diameter + particleSpeed) * 0.5;
+                            particle.tilt = Math.sin(particle.tiltAngle) * 15;
+                        }
+                        if (particle.x > width + 20 || particle.x < -20 || particle.y > height) {
+                            if (streamingConfetti && particles.length <= maxParticleCount)
+                                resetParticle(particle, width, height,colors);
+                            else {
+                                particles.splice(i, 1);
+                                i--;
+                            }
+                        }
+                    }
+                }
+
+
+        </script>
+
 
 </body>
 </html>

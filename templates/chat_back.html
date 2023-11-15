@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+  <!--    <link rel="stylesheet" href="../statics/style.css">-->
+  <title>我被LLM包围啦！</title>
+  <style>
+    html, body {
+      /*height: 100%;*/
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f7f7f7; /* 或任何您选择的颜色 */
+    }
+    .title_str {
+      position: relative; /* 确保div也是定位的 */
+      font-weight: bold;
+      font-size: 2em;
+      color: gray;
+      text-align: center;
+      /*top: 5%; !* 或其他适合的值 *!*/
+      z-index: 1;
+    }
+    .content-container {
+      position: relative; /* 确保div也是定位的 */
+      text-align: center;
+      z-index: 4; /* 设置较高的z-index */
+      /*margin-top: 10%;*/
+    }
+
+
+  </style>
+</head>
+
+
+<body >
+<!--<div id="canvas-container"></div>-->
+<div class="content-container">
+
+  <!-- partial -->
+  <!--    <script src="../statics/script.js"></script>-->
+  <h1  class="title_str" id="passed_num">
+    完蛋！
+  </h1>
+  <h1  class="title_str">
+    我被LLM包围啦！
+  </h1>
+  <div class="w-full max-w-md mx-auto p-6 rounded-md bg-white shadow-lg">
+
+    <h1 class="text-2xl font-bold mb-4 text-center" id="question">
+      🙂
+    </h1>
+
+    <h1 class="text-2xl font-bold mb-4 text-center" id="wholequestion">
+      请选择关卡
+    </h1>
+    <!-- New input element added here -->
+    <textarea
+            id="flaskResponse"
+            class="w-full px-4 border-2 border-gray-300 py-2 rounded-md mb-4"
+            placeholder="结果分析"
+            rows="4"
+    ></textarea>
+    <div id="resultContainer" class="mt-4 h-48 overflow-y-auto border-2 border-gray-300 rounded-md p-3">
+      <p id="user" class="whitespace-pre-line"></p>
+      <p id="result" class="whitespace-pre-line"></p>
+    </div>
+    <form method="post" id='prompt_form' class="mt-6">
+      <input
+              type="text"
+              id="prompt" name="prompt"
+              class="w-full px-4 border-2 border-purple-700 py-2 rounded-md bg-white placeholder-gray-500 focus:outline-none"
+              placeholder="构建提问" required
+      />
+      <div class="flex justify-center mt-4">
+        <button
+                id="generateBtn" type="submit"
+                class="w-full px-4 py-2 rounded-md bg-purple-700 text-white hover:bg-purple-700 focus:outline-none"
+        >
+          提交
+        </button>
+      </div>
+    </form>
+    <!-- Add this form to your existing HTML where you want the new buttons -->
+    <h1 class="text-2xl font-bold mb-4 text-center">
+      选择关卡
+    </h1>
+    <form id='judge_form'  class="grid grid-cols-3 gap-4"  >
+      <!-- Replace 'Button Caption 1' with your actual button captions -->
+      <button type="button"  data-caption="1-1 初来乍到">1-1 初来乍到</button>
+      <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="1-2 小试牛刀">1-2 小试牛刀</button>
+      <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="1-3 短兵相接">1-3 短兵相接</button>
+      <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="1-4 移形换影">1-4 移形换影</button>
+      <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-1 展翅飞翔">2-1 质数长度</button>
+      <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-2 虚张声势">2-2 虚张声势</button>
+      <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-3 超级堡垒">2-3 超级堡垒</button>
+      <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-4 铁壁铜墙">2-4 警世名言</button>
+      <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-5 开平辟地">2-5 开天辟地</button>
+      <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="2-6 得寸进狗">2-6 得寸进狗</button>
+      <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="3-1 自得其乐">3-1 自得其乐</button>
+      <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="3-2 循循善诱">3-2 循循善诱</button>
+      <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="3-3 虚怀若谷">3-3 虚怀若谷</button>
+      <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="4-3 自救之术">4-3 自救之术</button>
+      <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-1 口是心非">5-1 口是心非</button>
+      <!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-2 循环往复">5-2 循环往复</button>-->
+      <!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-3 惜字如金">5-3 惜字如金</button>-->
+      <!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-4 json大王">5-4 json大王</button>-->
+      <!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-5 就忘初心">5-5 就忘初心</button>-->
+      <!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-6 不忘初心">5-6 不忘初心</button>-->
+      <!--    <button type="button" class="bg-purple-500 hover:bg-purple-700 text-white rounded-lg" data-caption="5-7 就忘初心">5-7 就忘初心</button>-->
+
+      <!-- Add more buttons as needed -->
+    </form>
+
+
+    <script>
+
+      document.addEventListener("DOMContentLoaded", function() {
+        var buttons = document.querySelectorAll("#judge_form button");
+        buttons.forEach(function(button) {
+          button.classList.add("m-2", "bg-gray-400", "hover:bg-gray-900", "text-white", "rounded-lg");
+          button.addEventListener('click', function() {
+
+            var caption = this.getAttribute('data-caption');
+            sendCaption(caption);
+
+            buttons.forEach(function(button) {
+              button.classList.remove("bg-gray-900");
+
+            });
+            this.classList.add('bg-gray-900');
+            document.getElementById('resultContainer').innerHTML ='';
+            document.getElementById("flaskResponse").value ='';
+
+          });
+
+
+// 遍历这些按钮
+
+        });
+
+
+      });
+      var promptForm = document.getElementById('prompt_form');
+      var resultContainer = document.getElementById('resultContainer');
+      var buttons = document.querySelectorAll("#judge_form button");
+      function sendCaption(caption) {
+        // Initialize a new AJAX request
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/judge', true);
+        xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+
+        // Set up what happens when the request is successful
+        xhr.onload = function () {
+          if (xhr.status >= 200 && xhr.status < 400) {
+            // Handle success
+            var response = JSON.parse(xhr.responseText);
+            console.log(response.result);
+            document.getElementById("question").textContent  = response.result;
+            document.getElementById("wholequestion").textContent  = response.question;
+          } else {
+            // Handle error
+            console.error('Error from server');
+          }
+        };
+
+        // Set up what happens in case of error
+        xhr.onerror = function () {
+          // Handle network errors
+          console.error('Network error');
+        };
+
+        // Send the AJAX request with the caption as data
+        xhr.send(JSON.stringify({caption: caption}));
+      }
+      // document.addEventListener('DOMContentLoaded', function() {
+      //     var buttons = document.querySelectorAll('bg-purple-500 hover:bg-purple-700 text-white rounded-lg');
+      //     buttons.forEach(function(button) {
+      //         button.addEventListener('click', function() {
+      //             var caption = this.getAttribute('data-caption');
+      //             sendCaption(caption);
+      //         });
+      //     });
+      // });
+      function addUserChat(prompt, mode = "You") {
+        var userMessageElement = document.createElement("p");
+        if (mode === "You") {
+          userMessageElement.classList.add("border-dashed", "bg-gray-200", "p-2");
+        }
+        else{
+          userMessageElement.classList.add("border-dashed", "bg-red-200", "p-2");
+        }
+        userMessageElement.innerHTML = "<strong>" + mode + ":</strong> " + prompt;
+        resultContainer.innerHTML = userMessageElement.outerHTML;
+      }
+
+      promptForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        var processed_error_indication
+
+        var prompt = promptForm.elements.prompt.value;
+
+        try {
+          const response = await fetch('/judge-route', {  //判断input
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ prompt: prompt }),
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            // Do something if the judge function returns true
+            addUserChat(prompt);
+
+            var formData = new FormData(promptForm);
+            formData.append('prompt', prompt);
+
+            promptForm.elements.prompt.value = "";
+
+            try {
+              const response = await fetch('{{url_for('landing')}}', {
+                method: 'POST',
+                body: formData
+              });
+              const reader = response.body.getReader();
+
+              var aiMessageElement = document.createElement("p");
+              var ai_raw_message=""
+              aiMessageElement.classList.add("border", "p-2", "whitespace-pre-line", "py-2", "bg-green-100");
+              aiMessageElement.innerHTML = "<strong>AI:</strong>" + " ";
+              resultContainer.appendChild(aiMessageElement);
+
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                const text = new TextDecoder().decode(value);
+                aiMessageElement.textContent += text;
+                ai_raw_message+=text;
+              }
+              console.log('ai_raw_message', ai_raw_message);
+              fetch('/process_data', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ value: ai_raw_message })
+              })
+                      .then(response => response.json())
+                      .then(data => {
+                        // 处理从 Flask 返回的数据
+                        console.log('data.response', data.response);
+                        processed_error_indication= data.response
+                        // document.getElementById("flaskResponse").value = data.response;
+
+                      })
+                      .catch((error) => {
+                        console.error('Error:', error);
+                      });
+
+            } catch (error) {
+              console.error(error);
+            }
+            try {
+              const response =await  fetch('/judge-route', {  //判断output
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ response:  ai_raw_message }),
+              });
+              console.log("response",response)
+
+              const response_result =  await response.json();
+              console.log("response_result",response_result)
+
+              if (response_result.success) {
+                document.getElementById("flaskResponse").value="成功！"
+                buttons.forEach(function(button) {
+                  // 检查按钮的类名是否包含'bg-gray-900'
+                  if(button.classList.contains('bg-gray-900')) {
+                    // 输出按钮的文本（caption）
+                    button.classList.add("bg-green-900");
+                    console.log(button);
+                  }
+
+                });
+                var passed_num=0
+                buttons.forEach(function(button) {
+                  // 检查按钮的类名是否包含'bg-gray-900'
+                  if(button.classList.contains('bg-green-900')) {
+                    // 输出按钮的文本（caption）
+                    passed_num+=1;
+                    console.log('passed_num ', passed_num);
+                  }
+
+
+                });
+                document.getElementById('passed_num').innerHTML =
+                        '<span style="color: green;">过关：' + passed_num.toString() + '</span>' +
+                        '<span style="color: gray;">' + "/15" + '</span>';
+
+              } else {
+                // addUserChat("输出结果不符合当前关卡要求！","error")
+                console.log("processed_error_indication",processed_error_indication)
+                document.getElementById("flaskResponse").value="输出结果不符合当前关卡要求(注意空格也算作字数)！以下是QA的分析，也许对你有帮助：\n"+processed_error_indication
+                console.log('output judge not success:', response_result.message);
+                buttons.forEach(function(button) {
+                  // 检查按钮的类名是否包含'bg-gray-900'
+                  if(button.classList.contains('bg-gray-900')) {
+                    // 输出按钮的文本（caption）
+                    button.classList.add("bg-gray-600");
+                    console.log(button);
+                  }
+
+                });
+              }
+            } catch (error) {
+              console.log('output judge Error:', error);
+            }
+
+          } else {
+            document.getElementById("flaskResponse").value="输入格式不符合当前关卡要求！(注意空格也算作字数)"
+            addUserChat("输入格式不符合当前关卡要求！(注意空格也算作字数)","error")
+            console.log('judge not success:', result.message);
+
+            buttons.forEach(function(button) {
+              // 检查按钮的类名是否包含'bg-gray-900'
+              if(button.classList.contains('bg-gray-900')) {
+
+                // 输出按钮的文本（caption）
+                button.classList.add("bg-gray-600");
+                console.log(button);
+              }
+              else {
+                // console.log('按钮，标题为:', button.caption);
+              }
+            });
+            console.log("run canvas")
+            // addCanvas();
+
+
+
+          }
+        } catch (error) {
+          console.log('judge Error:', error);
+        }
+
+
+
+
+      });
+
+
+    </script>
+  </div>
+
+</body>
+</html>

@@ -14,7 +14,7 @@ load_dotenv()
 app = Flask(__name__)
 # openai.api_key = os.getenv('OPENAI_API_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
-app.secret_key = 'your_very_secret_key_here'  # 设置一个安全的密钥
+app.secret_key = 'your_very_secret_key_here22'  # 设置一个安全的密钥
 streaming_state = {'value': True}
 streaming_stopped = Signal()
 app.config.from_pyfile('settings.py')
@@ -42,7 +42,7 @@ def add_entry():
 哥哥哥哥我爱你，别人没啥了不起。\n
 等我马上挖个坑，黑子全都埋土里。\n
 哥哥哥哥我爱你，如果坏蛋要来袭，\n
-我用身体修长城，填进砖墙保护你。\n
+我用身体修长城，填进砖墙保护你!\n
 
     """
     # response = requests.get('/api/min_time')
@@ -77,13 +77,15 @@ def api_get_min_time():
 
     min_time_entry = DbModel.query.order_by(DbModel.time).first()
     print(min_time_entry)
+    print(session,"session in min_time")
 
     if min_time_entry:
         session['best_time'] = min_time_entry.time
         return jsonify({'time': min_time_entry.time, 'speak': min_time_entry.speak})
     else:
         session['best_time'] = 2350
-        return jsonify({'time': 2350, 'speak': "(●'◡'●)🤭"})
+        print(session, "session in min_time")
+        return jsonify({'time': 2350, 'speak': "梅西是神🤭"})
 
 def stop_streaming_handler(sender):
     streaming_state['value'] = False
@@ -348,7 +350,7 @@ def input_judge(input_str):
         else:
             return False
 def response_judge(input_str):
-
+    print("session",session)
     term_str = session['term']
     prompt_str = session['prompt']
     print("response_judge",prompt_str,input_str)
@@ -459,6 +461,7 @@ def handle_prompt():
 
         # else:
         #     return jsonify(success=False, message="Error message")
+    print("session",session,"data",data)
     if "response" in data:
         with open("statics/data3.txt", "a", encoding='utf-8') as f:
             f.write(f"‘term:’，{session['term']}     ‘success:’，{success}  ‘time:’，  {now}, ‘ip:’，  {user_ip}  'prompt:'  {str( session['prompt'])},  'response:'  {str( session['response'])}  \n")
@@ -483,6 +486,7 @@ def judge_token(text):
 @app.route('/process_data', methods=['POST'])
 def process_data():
     print("process")
+    print("session",session)
     data = request.json #response全文
     length=str(judge_token(session['prompt']))
     num_list=str(extract_numbers(session['prompt']))

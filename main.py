@@ -115,7 +115,7 @@ def landing():
     openai_data = {
         "messages": [json_format],
         "model": "gpt-3.5-turbo",
-        "max_tokens": 256,
+        "max_tokens": 128,
         "temperature": 0.5,
         "top_p": 1,
         "n": 1,

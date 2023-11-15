@@ -128,6 +128,7 @@
                     id="prompt" name="prompt"
                     class="w-full px-4 border-2 border-purple-700 py-2 rounded-md bg-white placeholder-gray-500 focus:outline-none"
                     placeholder="构建提问" required
+                    maxlength="50"
             />
             <div class="flex justify-center mt-4">
                 <button
@@ -489,12 +490,19 @@
                                 // addUserChat("输出结果不符合当前关卡要求！","error")
                                 if (typeof processed_error_indication === 'undefined') {
                                     setTimeout(() => {
+                                        console.log("processed_error_indication undefined")
+                                        console.log("processed_error_indication",processed_error_indication)
+                                        document.getElementById("flaskResponse").value="输出结果不符合当前关卡要求(注意空格也算作字数)！以下是QA的分析，也许对你有帮助：\n"+processed_error_indication
+
                                         // 这里放入半秒后想要执行的代码
-                                    }, 500); // 500毫秒等于半秒
+                                    }, 1000); // 500毫秒等于半秒
+                                }else {
+                                    console.log("processed_error_indication defined")
+                                    console.log("processed_error_indication",processed_error_indication)
+                                    document.getElementById("flaskResponse").value="输出结果不符合当前关卡要求(注意空格也算作字数)！以下是QA的分析，也许对你有帮助：\n"+processed_error_indication
+
                                 }
 
-                                console.log("processed_error_indication",processed_error_indication)
-                                document.getElementById("flaskResponse").value="输出结果不符合当前关卡要求(注意空格也算作字数)！以下是QA的分析，也许对你有帮助：\n"+processed_error_indication
                                 console.log('output judge not success:', response_result.message);
                                 buttons.forEach(function(button) {
                                     // 检查按钮的类名是否包含'bg-gray-900'

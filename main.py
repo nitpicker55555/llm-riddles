@@ -462,9 +462,6 @@ def handle_prompt():
         # else:
         #     return jsonify(success=False, message="Error message")
     print("session",session,"data",data)
-    if "response" in data:
-        with open("static/data3.txt", "a", encoding='utf-8') as f:
-            f.write(f"‘term:’，{session['term']}     ‘success:’，{success}  ‘time:’，  {now}, ‘ip:’，  {user_ip}  'prompt:'  {str( session['prompt'])},  'response:'  {str( session['response'])}  \n")
     if success:
         return jsonify(success=True)
     else:

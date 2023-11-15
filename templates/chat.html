@@ -12,8 +12,14 @@
     <style>
         .blue-underline-link {
             color: blue;        /* 设置文字颜色为蓝色 */
-            font-size: 10px;
+            font-size: 15px;
             text-decoration: underline; /* 添加下划线 */
+        }
+        #mygithub {
+            color: blue;        /* 设置文字颜色为蓝色 */
+            font-size: 30px;
+            text-decoration: underline; /* 添加下划线 */
+            display: none;
         }
         #myConfettiContainer {
             pointer-events: none;
@@ -88,6 +94,7 @@
     <h1 id="timer2">最佳成绩;冠军留言：</h1>
     <input type="text" id="speakInput" placeholder="输入通关留言吧！" class="w-full px-4 border-2 border-purple-700 py-2 rounded-md bg-white placeholder-gray-500 focus:outline-none">
     <button onclick="submitData()" id="championship" class="w-full px-4 py-2 rounded-md bg-purple-700 text-white hover:bg-purple-700 focus:outline-none">提交</button>
+    <a href="https://github.com/nitpicker55555/llm-riddles" id="mygithub">来 GitHub 给我打星吧！</a>
     <h1  class="title_str" id="passed_num">
         完蛋！
     </h1>
@@ -162,7 +169,7 @@
 
             <!-- Add more buttons as needed -->
         </form>
-        <a href="https://github.com/nitpicker55555/llm-riddles" class="blue-underline-link" >TO GitHub</a>
+        <a href="https://github.com/nitpicker55555/llm-riddles" class="blue-underline-link" >来 GitHub 给我打⭐吧😀</a>
     </div>
     </div>
 
@@ -463,8 +470,10 @@
 
                                     document.getElementById("championship").style.display='block';
                                     document.getElementById("speakInput").style.display='block';
+                                    document.getElementById("mygithub").style.display='block';
+
                                     document.getElementById("flaskResponse").value="通关！！！！"
-                                    alert("恭喜通关！！！填写你的通关留言吧！")
+                                    alert("恭喜通关！！！填写你的通关留言吧！\n欢迎到我的Github看看！")
                                     var colors = ["DodgerBlue", "OliveDrab", "Gold", "Pink", "SlateBlue", "LightBlue", "Violet", "PaleGreen", "SteelBlue", "SandyBrown", "Chocolate", "Crimson"];
 
                                     startConfetti(3600,1,colors,5000);
@@ -478,6 +487,12 @@
 
                             } else {
                                 // addUserChat("输出结果不符合当前关卡要求！","error")
+                                if (typeof processed_error_indication === 'undefined') {
+                                    setTimeout(() => {
+                                        // 这里放入半秒后想要执行的代码
+                                    }, 500); // 500毫秒等于半秒
+                                }
+
                                 console.log("processed_error_indication",processed_error_indication)
                                 document.getElementById("flaskResponse").value="输出结果不符合当前关卡要求(注意空格也算作字数)！以下是QA的分析，也许对你有帮助：\n"+processed_error_indication
                                 console.log('output judge not success:', response_result.message);
